@@ -1,0 +1,23 @@
+version: '3'
+
+tasks:
+  test:
+    cmds:
+      - go test ./...
+
+  build:
+    cmds:
+      - go build -o bin/tagtool .
+
+  install:
+    desc: Install tagtool and the tt shorthand into GOPATH/bin
+    cmds:
+      - go install .
+      - ln -sf "$(go env GOPATH)/bin/tagtool" "$(go env GOPATH)/bin/tt"
+
+  completion:
+    desc: Add tt zsh completion to ~/.zshrc (once)
+    vars:
+      LINE: 'source <(tt completion zsh)'
+    cmds:
+      - grep -qxF '{{.LINE}}' ~/.zshrc || echo '{{.LINE}}' >> ~/.zshrc
