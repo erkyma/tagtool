@@ -11,7 +11,9 @@ import (
 	"strings"
 )
 
-const usage = `usage: tt [scope] [stage] [flags]
+const usage = `tagtool (tt) - stupid simple semver git tags
+
+usage: tt [scope] [stage] [flags]
 
 Creates the next semver git tag. You pick the kind of release; tt works out
 the number from existing tags and tags HEAD after asking you to confirm.
@@ -159,13 +161,21 @@ func run(o opts, tags []Version) {
 		}
 	}
 
+	if len(tags) == 0 && ask("no version tags yet. Use a 'v' prefix (v"+next.String()+", needed for Go modules)? [y/N] ") {
+		next.Prefix = "v"
+	}
+
 	fmt.Printf("%s → %s  @ %s\n", latest, next, commit)
 	if o.dry {
 		return
 	}
 
 	final := next.Stage == ""
-	if (!o.yes || final) && !confirm(final) {
+	prompt := "[y/N] "
+	if final {
+		prompt = "this is a FINAL release. [y/N] "
+	}
+	if (!o.yes || final) && !ask(prompt) {
 		fmt.Println("aborted")
 		return
 	}
@@ -276,15 +286,14 @@ func versionTags() []Version {
 	return tags
 }
 
-func confirm(final bool) bool {
+// stdin is shared so buffered input isn't lost between prompts.
+var stdin = bufio.NewReader(os.Stdin)
 
-	prompt := "[y/N] "
-	if final {
-		prompt = "this is a FINAL release. [y/N] "
-	}
+func ask(prompt string) bool {
+
 	fmt.Print(prompt)
 
-	line, _ := bufio.NewReader(os.Stdin).ReadString('\n')
+	line, _ := stdin.ReadString('\n')
 	answer := strings.ToLower(strings.TrimSpace(line))
 
 	return answer == "y" || answer == "yes"

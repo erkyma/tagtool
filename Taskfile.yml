@@ -10,14 +10,12 @@ tasks:
       - go build -o bin/tagtool .
 
   install:
-    desc: Install tagtool and the tt shorthand into GOPATH/bin
+    desc: Install tagtool into GOPATH/bin
     cmds:
       - go install .
-      - ln -sf "$(go env GOPATH)/bin/tagtool" "$(go env GOPATH)/bin/tt"
 
-  completion:
-    desc: Add tt zsh completion to ~/.zshrc (once)
-    vars:
-      LINE: 'source <(tt completion zsh)'
+  shell:
+    desc: Add the tt alias and zsh completion to ~/.zshrc (once)
     cmds:
-      - grep -qxF '{{.LINE}}' ~/.zshrc || echo '{{.LINE}}' >> ~/.zshrc
+      - for: ['alias tt=tagtool', 'source <(tagtool completion zsh)']
+        cmd: grep -qxF '{{.ITEM}}' ~/.zshrc || echo '{{.ITEM}}' >> ~/.zshrc
